@@ -30,6 +30,7 @@ async def start(msg: Message, bot: Bot):
         photo_id, caption = start_page[1], start_page[2]
         if photo_id:
             await msg.answer_photo(photo_id, caption=caption)
+            await tyutor_section(msg)
         else:
             await tyutor_section(msg)
     else:
@@ -156,17 +157,29 @@ async def process_contact(msg: Message, state: FSMContext):
 
 @router.message(MurojaatStates.waiting_subject)
 async def process_subject(msg: Message, state: FSMContext):
+    user_id1 = msg.from_user.id
+    full_name1 = msg.from_user.full_name
+    profile_link = f"<a href='tg://user?id={user_id1}'>{full_name1}</a>"
     user_data = await state.get_data()
     full_name = user_data.get("full_name")
     user_id = user_data.get("user_id")
     contact = user_data.get("contact")
     subject = msg.text
-    text = f"""Yangi murojaat:
-    👤 Ism: {full_name}
-    📞 Aloqa: {contact}
-    📝 Murojaat mazmuni:
-    {subject}
-    """
+    text = (
+        "━━━━━━━━━━━━━━━━━━━━\n"
+        "📩 <b>YANGI MUROJAAT</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
+
+        f"👤 <b>Foydalanuvchi:</b>\n"
+        f"   {profile_link}\n\n"
+
+        f"📝 <b>Ism:</b> {full_name}\n"
+        f"📞 <b>Aloqa:</b> {contact}\n\n"
+
+        "📌 <b>Murojaat mazmuni:</b>\n"
+        f"<blockquote>{subject}</blockquote>\n\n"
+    )
+
 
     # Murojaatni saqlash
     await msg.bot.send_message(chat_id=user_id, text=text, parse_mode="HTML")

@@ -394,13 +394,13 @@ async def list_users_cb(cb: CallbackQuery):
         button = [InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_admin")]
         await cb.message.answer("Hozircha hech qanday foydalanuvchi mavjud emas.", reply_markup=InlineKeyboardMarkup(inline_keyboard=[button]))
         return
-    
+
     button = []
     for user in users:
-        id, user_id, username, full_name = user
-        button.append(InlineKeyboardButton(text=f"{full_name} (@{username})", callback_data=f"user:{user_id}"))
-    button = [InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_admin")]
-    await cb.message.answer("👥 Foydalanuvchilar ro'yxati:", reply_markup=InlineKeyboardMarkup(inline_keyboard=[button]))
+        _, user_id, username, full_name = user
+        button.append([InlineKeyboardButton(text=f"{full_name} (@{username})", callback_data=f"user:{user_id}")])
+    button.append([InlineKeyboardButton(text="🔙 Orqaga", callback_data="back_to_admin")])
+    await cb.message.answer("👥 Foydalanuvchilar ro'yxati:", reply_markup=InlineKeyboardMarkup(inline_keyboard=button))
     await cb.message.delete()
 
 @router.callback_query(F.data.startswith("user:"))
@@ -414,16 +414,17 @@ async def user_detail_cb(cb: CallbackQuery):
     if not user:
         await cb.message.answer("⚠️ Foydalanuvchi topilmadi.")
         return
-    user_id, username, full_name = user
+    _, user_id, username, full_name = user
+    profile_link = f"<a href='tg://user?id={user_id}'>{full_name}</a>"
     text = f"👤 Foydalanuvchi ma'lumotlari:\n\n"
     text += f"ID: {user_id}\n"
-    text += f"Ism: {full_name}\n"
+    text += f"Ism: {profile_link}\n"
     text += f"Username: @{username}\n"
     button = [
         [InlineKeyboardButton(text="❌ Foydalanuvchini o'chirish", callback_data=f"delete_user:{user_id}")]
     ]   
     button.append([InlineKeyboardButton(text="🔙 Orqaga", callback_data="list_users")])
-    await cb.message.answer(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=button))
+    await cb.message.answer(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=button), parse_mode="HTML")
     await cb.message.delete()
 
 @router.callback_query(F.data.startswith("delete_user:"))
